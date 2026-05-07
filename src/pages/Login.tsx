@@ -33,7 +33,7 @@ export function Login() {
   };
 
   return (
-    <Layout showRightPanel={false}>
+    <Layout>
       <div className="pt-24 pb-16">
         <div className="max-w-md mx-auto px-4">
           <button

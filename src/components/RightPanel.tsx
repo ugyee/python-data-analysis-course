@@ -5,7 +5,7 @@ export function RightPanel() {
   const { isAuthenticated, user } = useAuthStore();
 
   return (
-    <aside className="hidden lg:block w-80 h-screen fixed right-0 top-16 z-30 p-6 overflow-y-auto bg-soft-bg">
+    <aside className="hidden lg:block w-72 h-screen fixed right-0 top-16 z-30 p-4 overflow-y-auto bg-soft-bg">
       <div className="space-y-6">
         {isAuthenticated && (
           <div className="bg-gradient-to-br from-primary-100/50 to-accent-pink/30 rounded-3xl p-5 shadow-card">

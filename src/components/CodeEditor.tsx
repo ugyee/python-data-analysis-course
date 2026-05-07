@@ -89,136 +89,129 @@ captured_output.getvalue()
   };
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center gap-3">
-        <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-accent-green to-accent-cyan flex items-center justify-center">
-          <Code className="text-white" size={24} />
-        </div>
-        <div>
-          <h2 className="text-xl font-bold text-soft-text">在线代码练习</h2>
-          <p className="text-soft-muted text-sm">编写Python代码并运行查看结果</p>
-        </div>
-      </div>
-
-      <div>
-        <div className="flex items-center justify-between mb-2 px-4 py-2 bg-slate-900 rounded-t-xl">
-          <span className="text-xs text-slate-400">practice.py</span>
-          <div className="flex items-center gap-2">
-            <button
-              onClick={handleCopy}
-              className="flex items-center gap-1 text-xs text-slate-400 hover:text-white transition-colors"
-            >
-              {copied ? (
-                <>
-                  <CheckCircle size={14} className="text-green-400" />
-                  <span className="text-green-400">已复制</span>
-                </>
-              ) : (
-                <>
-                  <Copy size={14} />
-                  <span>复制</span>
-                </>
-              )}
-            </button>
-            <button
-              onClick={handleReset}
-              className="flex items-center gap-1 text-xs text-slate-400 hover:text-white transition-colors"
-            >
-              <RefreshCw size={14} />
-              <span>重置</span>
-            </button>
-            <button
-              onClick={handleRun}
-              disabled={isRunning}
-              className="flex items-center gap-1 px-3 py-1 bg-gradient-to-r from-orange-500 to-amber-500 text-white text-xs rounded-lg hover:shadow-lg transition-all disabled:opacity-50"
-            >
-              {isRunning ? (
-                <>
-                  <RefreshCw size={14} className="animate-spin" />
-                  <span>运行中...</span>
-                </>
-              ) : (
-                <>
-                  <Play size={14} />
-                  <span>运行</span>
-                </>
-              )}
-            </button>
+    <div className="flex flex-col h-full p-4">
+      <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-accent-green to-accent-cyan flex items-center justify-center">
+            <Code className="text-white" size={20} />
+          </div>
+          <div>
+            <h2 className="text-lg font-bold text-soft-text">在线代码练习</h2>
+            <p className="text-xs text-soft-muted">编写Python代码并运行</p>
           </div>
         </div>
-        <textarea
-          value={code}
-          onChange={(e) => setCode(e.target.value)}
-          className="w-full h-64 bg-slate-900 text-slate-300 p-4 rounded-b-xl font-mono text-sm resize-none focus:outline-none focus:ring-2 focus:ring-primary-500/50"
-          placeholder="在此输入Python代码..."
-          spellCheck={false}
-        />
+        <div className="flex items-center gap-2">
+          <button
+            onClick={handleCopy}
+            className="p-2 text-slate-400 hover:text-white hover:bg-slate-700 rounded-lg transition-colors"
+            title="复制代码"
+          >
+            {copied ? <CheckCircle size={16} className="text-green-400" /> : <Copy size={16} />}
+          </button>
+          <button
+            onClick={handleReset}
+            className="p-2 text-slate-400 hover:text-white hover:bg-slate-700 rounded-lg transition-colors"
+            title="重置代码"
+          >
+            <RefreshCw size={16} />
+          </button>
+          <button
+            onClick={handleRun}
+            disabled={isRunning}
+            className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-orange-500 to-amber-500 text-white text-sm rounded-lg hover:shadow-lg transition-all disabled:opacity-50"
+          >
+            {isRunning ? (
+              <>
+                <RefreshCw size={14} className="animate-spin" />
+                <span>运行中</span>
+              </>
+            ) : (
+              <>
+                <Play size={14} />
+                <span>运行</span>
+              </>
+            )}
+          </button>
+        </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        <div>
-          <h3 className="text-sm font-semibold text-soft-text mb-3 flex items-center gap-2">
-            <Terminal className="text-accent-green" size={18} />
+      <div className="flex-1 flex flex-col gap-4 min-h-0">
+        <div className="flex-1 min-h-[200px] flex flex-col">
+          <div className="px-3 py-2 bg-slate-800 rounded-t-lg text-xs text-slate-400 font-mono">
+            practice.py
+          </div>
+          <textarea
+            value={code}
+            onChange={(e) => setCode(e.target.value)}
+            className="flex-1 bg-slate-900 text-slate-300 p-3 rounded-b-lg rounded-t-none font-mono text-sm resize-none focus:outline-none focus:ring-2 focus:ring-primary-500/50"
+            placeholder="在此输入Python代码..."
+            spellCheck={false}
+          />
+        </div>
+
+        <div className="flex-1 min-h-[120px] flex flex-col gap-3">
+          <div className="flex items-center gap-2 text-sm font-semibold text-soft-text">
+            <Terminal className="text-accent-green" size={16} />
             运行输出
-          </h3>
-          <div className={`min-h-40 rounded-xl p-4 font-mono text-sm ${
+          </div>
+          <div className={`flex-1 rounded-lg p-3 font-mono text-sm overflow-auto ${
             error ? 'bg-red-50 text-red-600' : output ? 'bg-slate-50 text-soft-text' : 'bg-slate-100 text-slate-400'
           }`}>
             {isRunning ? (
               <span className="text-primary-600">正在运行...</span>
             ) : error ? (
-              <pre>{error}</pre>
+              <pre className="whitespace-pre-wrap">{error}</pre>
             ) : output ? (
-              <pre>{output}</pre>
+              <pre className="whitespace-pre-wrap">{output}</pre>
             ) : (
               <span>点击运行按钮查看输出结果</span>
             )}
           </div>
         </div>
 
-        <div>
-          <h3 className="text-sm font-semibold text-soft-text mb-3">预期输出</h3>
-          <div className="min-h-40 bg-slate-50 rounded-xl p-4 font-mono text-sm text-soft-text">
-            <pre>{expectedOutput}</pre>
+        <div className="flex-1 min-h-[100px] flex flex-col gap-2">
+          <div className="text-sm font-semibold text-soft-text">预期输出</div>
+          <div className="flex-1 bg-slate-50 rounded-lg p-3 font-mono text-sm overflow-auto">
+            <pre className="whitespace-pre-wrap">{expectedOutput}</pre>
           </div>
         </div>
-      </div>
 
-      <div>
-        <h3 className="text-sm font-semibold text-soft-text mb-3">提示</h3>
-        <ul className="space-y-2">
-          {hints.map((hint, index) => (
-            <li key={index} className="flex items-start gap-2 text-sm text-soft-muted">
-              <span className="w-5 h-5 rounded-full bg-primary-100 text-primary-600 flex items-center justify-center text-xs flex-shrink-0 mt-0.5">
-                {index + 1}
-              </span>
-              <span>{hint}</span>
-            </li>
-          ))}
-        </ul>
-      </div>
-
-      {solution && (
-        <div>
-          <button
-            onClick={() => setShowSolution(!showSolution)}
-            className="flex items-center gap-2 px-4 py-2 bg-primary-100 text-primary-600 rounded-xl hover:bg-primary-200 transition-colors"
-          >
-            {showSolution ? '隐藏答案' : '查看答案'}
-          </button>
-
-          {showSolution && (
-            <div className="mt-4">
-              <h3 className="text-sm font-semibold text-soft-text mb-3">参考答案</h3>
-              <div className="bg-slate-900 rounded-xl p-4 overflow-x-auto">
-                <pre className="text-sm text-slate-300 whitespace-pre-wrap">
-                  <code>{solution}</code>
-                </pre>
-              </div>
-            </div>
-          )}
+        <div className="flex-shrink-0">
+          <div className="text-sm font-semibold text-soft-text mb-2">提示</div>
+          <ul className="space-y-1">
+            {hints.slice(0, 3).map((hint, index) => (
+              <li key={index} className="flex items-start gap-2 text-xs text-soft-muted">
+                <span className="w-4 h-4 rounded-full bg-primary-100 text-primary-600 flex items-center justify-center text-[10px] flex-shrink-0 mt-0.5">
+                  {index + 1}
+                </span>
+                <span className="line-clamp-1">{hint}</span>
+              </li>
+            ))}
+          </ul>
         </div>
-      )}
+
+        {solution && (
+          <div className="flex-shrink-0 pt-2 border-t border-slate-100">
+            <button
+              onClick={() => setShowSolution(!showSolution)}
+              className="flex items-center gap-2 px-3 py-1.5 bg-primary-100 text-primary-600 rounded-lg hover:bg-primary-200 transition-colors text-sm"
+            >
+              {showSolution ? '隐藏答案' : '查看答案'}
+            </button>
+
+            {showSolution && (
+              <div className="mt-3">
+                <div className="text-sm font-semibold text-soft-text mb-2">参考答案</div>
+                <div className="bg-slate-900 rounded-lg p-3 max-h-40 overflow-auto">
+                  <pre className="text-xs text-slate-300 whitespace-pre-wrap">
+                    <code>{solution}</code>
+                  </pre>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
     </div>
   );
 }
