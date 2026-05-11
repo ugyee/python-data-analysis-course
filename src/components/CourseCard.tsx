@@ -1,6 +1,8 @@
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Course } from '@/types';
-import { Clock, BookOpen, ChevronRight } from 'lucide-react';
+import { Clock, BookOpen, ChevronRight, ChevronDown, List } from 'lucide-react';
+import { mockCourseDetails } from '@/data/mockData';
 
 interface CourseCardProps {
   course: Course;
@@ -21,8 +23,19 @@ const categoryColors: Record<string, string> = {
 };
 
 export function CourseCard({ course }: CourseCardProps) {
+  const [isOutlineOpen, setIsOutlineOpen] = useState(false);
   const difficultyStyle = difficultyColors[course.difficulty];
   const gradientClass = categoryColors[course.category] || 'from-purple-400 to-pink-400';
+  const courseDetail = mockCourseDetails[course.id];
+
+  const corePoints = courseDetail?.chapters
+    ?.slice(0, 3)
+    .flatMap((chapter) =>
+      chapter.lessons
+        .filter((lesson) => lesson.type === 'article')
+        .map((lesson) => lesson.title)
+    )
+    .slice(0, 5) || [];
 
   return (
     <Link
@@ -60,6 +73,48 @@ export function CourseCard({ course }: CourseCardProps) {
           <span>查看详情</span>
           <ChevronRight size={16} className="ml-1" />
         </div>
+      </div>
+
+      <div className="px-5 pb-5 -mt-2">
+        <button
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            setIsOutlineOpen(!isOutlineOpen);
+          }}
+          className="w-full flex items-center justify-center gap-2 py-2.5 bg-primary-50 hover:bg-primary-100 text-primary-600 text-sm font-medium rounded-xl transition-colors"
+        >
+          <List size={16} />
+          <span>{isOutlineOpen ? '收起' : '课程大纲'}</span>
+          <ChevronDown
+            size={16}
+            className={`transition-transform ${isOutlineOpen ? 'rotate-180' : ''}`}
+          />
+        </button>
+
+        {isOutlineOpen && corePoints.length > 0 && (
+          <div className="mt-3 p-4 bg-white rounded-xl border border-primary-100">
+            <h4 className="text-xs font-semibold text-primary-600 mb-3">核心知识点</h4>
+            <ul className="space-y-2">
+              {corePoints.map((point, index) => (
+                <li key={index} className="flex items-start gap-2 text-sm text-soft-muted">
+                  <span className="flex-shrink-0 w-5 h-5 rounded-full bg-primary-100 text-primary-600 text-xs flex items-center justify-center font-medium">
+                    {index + 1}
+                  </span>
+                  <span className="line-clamp-1">{point}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+
+        <Link
+          to={`/courses/${course.id}`}
+          className="mt-4 flex items-center justify-center gap-2 w-full py-3 bg-gradient-to-r from-primary-500 to-purple-500 text-white font-semibold rounded-xl hover:shadow-lg hover:shadow-primary-500/30 transition-all text-sm"
+        >
+          <span>查看详情</span>
+          <ChevronRight size={16} />
+        </Link>
       </div>
     </Link>
   );
