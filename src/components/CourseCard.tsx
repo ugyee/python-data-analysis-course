@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Course } from '@/types';
-import { Clock, BookOpen, ChevronRight, ChevronDown, List } from 'lucide-react';
+import { Clock, BookOpen, ChevronRight, ChevronDown, List, Copy, Check } from 'lucide-react';
 import { mockCourseDetails } from '@/data/mockData';
 
 interface CourseCardProps {
@@ -22,8 +22,49 @@ const categoryColors: Record<string, string> = {
   '机器学习': 'from-green-400 to-cyan-400',
 };
 
+const codeTemplates: Record<string, string> = {
+  'data-cleaning': `import pandas as pd
+import numpy as np
+df = pd.DataFrame({'col': [1, 2, None, 4]})
+print(df.isnull().sum())`,
+  'group-aggregation': `import pandas as pd
+df = pd.DataFrame({'type': ['A','B','A'], 'value': [100, 200, 150]})
+print(df.groupby('type')['value'].sum())`,
+  'market-basket': `from mlxtend.frequent_patterns import apriori
+from mlxtend.preprocessing import TransactionEncoder
+te = TransactionEncoder()
+te_ary = te.fit(transactions).transform(transactions)`,
+  'customer-clustering': `from sklearn.cluster import KMeans
+from sklearn.preprocessing import StandardScaler
+scaler = StandardScaler()
+X_scaled = scaler.fit_transform(X)`,
+  'data-visualization': `import matplotlib.pyplot as plt
+import seaborn as sns
+sns.set_theme(style='whitegrid')
+plt.figure(figsize=(10, 6))`,
+  'ab-testing': `from scipy import stats
+import numpy as np
+# Z检验
+z_stat, p_value = stats.normaltest(data)`,
+  'time-series': `import pandas as pd
+df['date'] = pd.to_datetime(df['date'])
+df.set_index('date', inplace=True)`,
+  'feature-engineering': `from sklearn.preprocessing import StandardScaler
+scaler = StandardScaler()
+X_scaled = scaler.fit_transform(X)`,
+  'anomaly-detection': `from scipy import stats
+import numpy as np
+z_scores = np.abs(stats.zscore(data))
+outliers = np.where(z_scores > 3)`,
+  'data-merging': `import pandas as pd
+df1 = pd.DataFrame({'key': ['a', 'b'], 'val1': [1, 2]})
+df2 = pd.DataFrame({'key': ['a', 'b'], 'val2': [3, 4]})
+result = pd.merge(df1, df2, on='key')`,
+};
+
 export function CourseCard({ course }: CourseCardProps) {
   const [isOutlineOpen, setIsOutlineOpen] = useState(false);
+  const [copied, setCopied] = useState(false);
   const difficultyStyle = difficultyColors[course.difficulty];
   const gradientClass = categoryColors[course.category] || 'from-purple-400 to-pink-400';
   const courseDetail = mockCourseDetails[course.id];
@@ -36,6 +77,31 @@ export function CourseCard({ course }: CourseCardProps) {
         .map((lesson) => lesson.title)
     )
     .slice(0, 5) || [];
+
+  const handleCopyCode = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    const code = codeTemplates[course.id];
+    if (code) {
+      try {
+        await navigator.clipboard.writeText(code);
+        setCopied(true);
+        if (Notification.permission === 'granted') {
+          new Notification('✅ 已复制代码模板');
+        } else if (Notification.permission !== 'denied') {
+          Notification.requestPermission().then(permission => {
+            if (permission === 'granted') {
+              new Notification('✅ 已复制代码模板');
+            }
+          });
+        }
+        setTimeout(() => setCopied(false), 2000);
+      } catch (err) {
+        console.error('复制失败:', err);
+      }
+    }
+  };
 
   return (
     <Link
@@ -115,6 +181,14 @@ export function CourseCard({ course }: CourseCardProps) {
           <span>查看详情</span>
           <ChevronRight size={16} />
         </Link>
+        
+        <button
+          onClick={handleCopyCode}
+          className="mt-3 flex items-center justify-center gap-2 w-full py-2.5 bg-accent-yellow/20 hover:bg-accent-yellow/30 text-yellow-600 text-sm font-medium rounded-xl transition-colors"
+        >
+          {copied ? <Check size={16} /> : <Copy size={16} />}
+          <span>{copied ? '已复制' : '📋 复制代码'}</span>
+        </button>
       </div>
     </Link>
   );

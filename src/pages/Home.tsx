@@ -1,17 +1,125 @@
+import { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuthStore } from '@/store/authStore';
 import { CourseCard } from '@/components/CourseCard';
+import { GetCodeModal } from '@/components/GetCodeModal';
 import { mockCourses } from '@/data/mockData';
-import { ArrowRight, BookOpen, Sparkles, Star, Rocket, TrendingUp, Calendar, Users, CheckCircle, Play, Clock, Award, GraduationCap } from 'lucide-react';
-import { HeroIllustration, SpaceRocketIllustration } from '@/components/Illustrations';
+import { ArrowLeft, ArrowRight, BookOpen, Sparkles, Star, Rocket, TrendingUp, Calendar, Users, CheckCircle, Play, Clock, Award, GraduationCap, List } from 'lucide-react';
+import { SpaceRocketIllustration } from '@/components/Illustrations';
 import { Layout } from '@/components/Layout';
+
+const sidebarItems = [
+  { id: 'course-overview', label: '课程概览', icon: BookOpen },
+  { id: 'project-data-cleaning', label: '项目1: 数据清洗实战', icon: Rocket },
+  { id: 'project-group-aggregation', label: '项目2: 分组聚合分析', icon: Rocket },
+  { id: 'project-market-basket', label: '项目3: 购物篮分析', icon: Rocket },
+  { id: 'project-customer-clustering', label: '项目4: 客户聚类分析', icon: Rocket },
+  { id: 'project-data-visualization', label: '项目5: 数据可视化', icon: Rocket },
+  { id: 'project-ab-testing', label: '项目6: A/B测试分析', icon: Rocket },
+  { id: 'project-time-series', label: '项目7: 时间序列分析', icon: Rocket },
+  { id: 'project-feature-engineering', label: '项目8: 特征工程', icon: Rocket },
+  { id: 'project-anomaly-detection', label: '项目9: 异常值检测', icon: Rocket },
+  { id: 'project-data-merging', label: '项目10: 多数据集合并', icon: Rocket },
+  { id: 'instructor', label: '讲师介绍', icon: GraduationCap },
+];
 
 export function Home() {
   const { isAuthenticated } = useAuthStore();
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [activeSection, setActiveSection] = useState('course-overview');
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const sectionRefs = useRef<Record<string, HTMLElement | null>>({});
+
+  useEffect(() => {
+    const observerOptions = {
+      root: null,
+      rootMargin: '-20% 0px -70% 0px',
+      threshold: 0,
+    };
+
+    const observerCallback = (entries: IntersectionObserverEntry[]) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          setActiveSection(entry.target.id);
+        }
+      });
+    };
+
+    const observer = new IntersectionObserver(observerCallback, observerOptions);
+
+    const sectionIds = ['course-overview', ...sidebarItems.filter(item => item.id.startsWith('project-')).map(item => item.id), 'instructor'];
+    sectionIds.forEach((id) => {
+      const element = document.getElementById(id);
+      if (element) {
+        observer.observe(element);
+        sectionRefs.current[id] = element;
+      }
+    });
+
+    return () => {
+      observer.disconnect();
+    };
+  }, []);
+
+  const scrollToSection = (id: string) => {
+    const element = document.getElementById(id);
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth' });
+      setActiveSection(id);
+      setIsSidebarOpen(false);
+    }
+  };
 
   return (
     <Layout>
-      <div className="pt-4 pb-12">
+      <div className="flex min-h-screen">
+        <aside className="fixed left-0 top-16 h-[calc(100vh-4rem)] w-[280px] bg-white/80 backdrop-blur-xl border-r border-soft-bg border-soft-border shadow-card overflow-y-auto z-40">
+          <div className="sticky top-0 p-4">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-lg font-semibold text-soft-text">课程目录</h2>
+              <button
+                onClick={() => setIsSidebarOpen(false)}
+                className="lg:hidden p-2 rounded-lg hover:bg-soft-bg transition-colors"
+              >
+                <List size={20} className="text-soft-muted" />
+              </button>
+            </div>
+            <nav className="space-y-1">
+              {sidebarItems.map((item) => {
+                const Icon = item.icon;
+                const isActive = activeSection === item.id;
+                return (
+                  <button
+                    key={item.id}
+                    onClick={() => scrollToSection(item.id)}
+                    className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-left transition-all ${
+                      isActive
+                        ? 'bg-gradient-to-r from-primary-100 to-accent-lavender/30 text-primary-700 font-semibold shadow-soft'
+                        : 'text-soft-muted hover:bg-soft-bg hover:text-soft-text'
+                    }`}
+                  >
+                    <Icon size={18} className={isActive ? 'text-primary-600' : ''} />
+                    <span className="text-sm truncate">{item.label}</span>
+                    {isActive && (
+                      <div className="ml-auto w-2 h-2 rounded-full bg-primary-500" />
+                    )}
+                  </button>
+                );
+              })}
+            </nav>
+          </div>
+        </aside>
+
+        <button
+          onClick={() => setIsSidebarOpen(true)}
+          className="lg:hidden fixed bottom-4 left-4 z-50 flex items-center gap-2 px-4 py-3 bg-soft-gradient text-white rounded-full shadow-soft-lg hover:shadow-soft-xl transition-all"
+        >
+          <List size={20} />
+          <span className="font-medium">目录</span>
+        </button>
+
+        <main className="flex-1 ml-0 lg:ml-[280px] pt-4 pb-12">
+          <div className="pt-4 pb-12">
         <section className="mb-12">
           <div className="bg-gradient-to-br from-primary-100/60 via-accent-pink/20 to-accent-lavender/30 rounded-3xl p-8 shadow-soft relative overflow-hidden">
             <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-bl from-primary-300/30 to-accent-pink/20 rounded-full blur-3xl" />
@@ -52,12 +160,12 @@ export function Home() {
                     <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
                   </Link>
                   {!isAuthenticated && (
-                    <Link
-                      to="/register"
+                    <button
+                      onClick={() => setIsModalOpen(true)}
                       className="px-8 py-4 bg-white text-soft-text font-semibold rounded-2xl shadow-card hover:shadow-soft transition-all"
                     >
-                      免费注册
-                    </Link>
+                      获取项目代码
+                    </button>
                   )}
                 </div>
               </div>
@@ -93,7 +201,38 @@ export function Home() {
           </div>
         </section>
 
-        <section className="mb-12">
+        <nav className="mb-10">
+          <div className="bg-white/80 backdrop-blur-xl rounded-2xl p-2 shadow-card">
+            <div className="flex items-center justify-center gap-2 sm:gap-4">
+              <a
+                href="#course-overview"
+                className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 sm:px-6 py-3 rounded-xl text-soft-muted hover:text-primary-600 hover:bg-primary-50 transition-all font-medium min-w-[120px]"
+              >
+                <BookOpen size={18} />
+                <span className="hidden sm:inline">课程概览</span>
+                <span className="sm:hidden">概览</span>
+              </a>
+              <a
+                href="#projects"
+                className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 sm:px-6 py-3 rounded-xl text-soft-muted hover:text-primary-600 hover:bg-primary-50 transition-all font-medium min-w-[120px]"
+              >
+                <Rocket size={18} />
+                <span className="hidden sm:inline">实战项目</span>
+                <span className="sm:hidden">项目</span>
+              </a>
+              <a
+                href="#instructor"
+                className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 sm:px-6 py-3 rounded-xl text-soft-muted hover:text-primary-600 hover:bg-primary-50 transition-all font-medium min-w-[120px]"
+              >
+                <GraduationCap size={18} />
+                <span className="hidden sm:inline">讲师介绍</span>
+                <span className="sm:hidden">讲师</span>
+              </a>
+            </div>
+          </div>
+        </nav>
+
+        <section id="course-overview" className="mb-12 scroll-mt-24">
           <div className="text-center mb-8">
             <div className="inline-flex items-center gap-2 px-4 py-2 bg-accent-lavender/30 rounded-full text-primary-600 text-sm font-medium mb-3">
               <BookOpen size={16} />
@@ -166,7 +305,7 @@ export function Home() {
           ))}
         </section>
 
-        <section>
+        <section id="projects" className="scroll-mt-24">
           <div className="text-center mb-8">
             <div className="inline-flex items-center gap-2 px-4 py-2 bg-accent-lavender/30 rounded-full text-primary-600 text-sm font-medium mb-3">
               <Sparkles size={16} />
@@ -179,19 +318,60 @@ export function Home() {
           </div>
           
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-            {mockCourses.map((course, index) => (
-              <div 
-                key={course.id}
-                className="animate-fadeIn"
-                style={{ animationDelay: `${index * 0.1}s` }}
-              >
-                <CourseCard course={course} />
-              </div>
-            ))}
+            {mockCourses.map((course, index) => {
+              const projectId = `project-${course.id}`;
+              const prevCourse = index > 0 ? mockCourses[index - 1] : null;
+              const nextCourse = index < mockCourses.length - 1 ? mockCourses[index + 1] : null;
+
+              return (
+                <div 
+                  key={course.id}
+                  id={projectId}
+                  className="animate-fadeIn"
+                  style={{ animationDelay: `${index * 0.1}s` }}
+                >
+                  <CourseCard course={course} />
+                  <div className="mt-3 flex items-center justify-between gap-2">
+                    {prevCourse ? (
+                      <a
+                        href={`#project-${prevCourse.id}`}
+                        className="flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-primary-600 hover:text-primary-700 bg-primary-50/70 hover:bg-primary-100 rounded-xl transition-all"
+                      >
+                        <ArrowLeft size={14} />
+                        <span className="hidden sm:inline">上一节</span>
+                        <span className="sm:hidden">←</span>
+                      </a>
+                    ) : (
+                      <span className="flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-gray-300 bg-gray-100/50 rounded-xl cursor-not-allowed">
+                        <ArrowLeft size={14} />
+                        <span className="hidden sm:inline">上一节</span>
+                        <span className="sm:hidden">←</span>
+                      </span>
+                    )}
+                    {nextCourse ? (
+                      <a
+                        href={`#project-${nextCourse.id}`}
+                        className="flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-primary-600 hover:text-primary-700 bg-primary-50/70 hover:bg-primary-100 rounded-xl transition-all ml-auto"
+                      >
+                        <span className="hidden sm:inline">下一节</span>
+                        <span className="sm:hidden">→</span>
+                        <ArrowRight size={14} />
+                      </a>
+                    ) : (
+                      <span className="flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-gray-300 bg-gray-100/50 rounded-xl cursor-not-allowed ml-auto">
+                        <span className="hidden sm:inline">下一节</span>
+                        <span className="sm:hidden">→</span>
+                        <ArrowRight size={14} />
+                      </span>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
           </div>
         </section>
 
-        <section className="mt-16">
+        <section id="instructor" className="mt-16 scroll-mt-24">
           <div className="bg-gradient-to-br from-white via-primary-50/50 to-accent-lavender/30 rounded-3xl p-8 shadow-soft relative overflow-hidden">
             <div className="absolute -top-8 -right-8 w-32 h-32 bg-gradient-to-bl from-primary-300/30 to-accent-pink/20 rounded-full blur-2xl" />
             <div className="absolute -bottom-8 -left-8 w-40 h-40 bg-gradient-to-tr from-accent-green/20 to-accent-yellow/20 rounded-full blur-3xl" />
@@ -250,16 +430,28 @@ export function Home() {
                 加入我们，开始你的数据分析学习之旅。从入门到高级，循序渐进掌握核心技能。
               </p>
               <Link
-                to={isAuthenticated ? "/profile" : "/register"}
+                to={isAuthenticated ? "/profile" : "/courses"}
+                onClick={!isAuthenticated ? (e) => { e.preventDefault(); setIsModalOpen(true); } : undefined}
                 className="inline-flex items-center gap-2 px-8 py-4 bg-soft-gradient text-white font-semibold rounded-2xl shadow-soft hover:shadow-soft-lg transition-all hover:scale-105"
               >
-                {isAuthenticated ? "进入个人中心" : "立即注册"}
+                {isAuthenticated ? "进入个人中心" : "获取项目代码"}
                 <ArrowRight size={18} />
               </Link>
             </div>
           </div>
         </section>
       </div>
-    </Layout>
+      </main>
+      
+      <GetCodeModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
+      
+      {isSidebarOpen && (
+        <div
+          className="fixed inset-0 bg-black/20 backdrop-blur-sm z-30 lg:hidden"
+          onClick={() => setIsSidebarOpen(false)}
+        />
+      )}
+    </div>
+  </Layout>
   );
 }
