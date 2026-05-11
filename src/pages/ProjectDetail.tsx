@@ -286,8 +286,6 @@ export function ProjectDetail() {
                         <div className="flex items-center gap-2">
                           {lesson.type === 'quiz' ? (
                             <span className="text-yellow-500 text-sm">📝</span>
-                          ) : lesson.type === 'practice' ? (
-                            <span className="text-green-500 text-sm">💻</span>
                           ) : (
                             <span className="text-blue-500 text-sm">📖</span>
                           )}
